@@ -91,7 +91,6 @@ studysnap/
 # Install server deps
 cd server
 npm install
-npx prisma generate
 
 # Install client deps
 cd ../client
@@ -114,7 +113,8 @@ cp client/.env.example client/.env
 
 ```bash
 cd server
-npx prisma db push
+npx prisma generate
+npx prisma migrate dev --name init
 ```
 
 ### 4. Run all three processes (in separate terminals)
