@@ -5,7 +5,7 @@ import { UnrecoverableError } from 'bullmq';
 import { getRedisClient, getPubClient } from '../utils/redis.js';
 import prisma from '../utils/prisma.js';
 import { buildPrompt } from '../utils/promptBuilder.js';
-import { streamSummary } from '../services/GroqService.js';
+import { streamSummary } from '../services/GeminiService.js';
 
 const connection = getRedisClient();
 const publisher = getPubClient();
@@ -80,7 +80,7 @@ const worker = new Worker(
       const userFacingError = quotaLimited
         ? inputTooLarge
           ? 'PDF is too large for current AI limits. Try a shorter PDF or focus on specific pages/topics.'
-          : 'AI quota exceeded. Please check Groq API billing/quota and try again later.'
+          : 'AI quota exceeded. Please check Gemini API billing/quota and try again later.'
         : 'Failed to generate summary. Please try again.';
 
       await prisma.summary.update({

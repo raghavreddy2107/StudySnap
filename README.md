@@ -12,7 +12,7 @@ An AI-powered PDF study summarizer for students. Upload any PDF, tell it when yo
 | Cache/Queue | Redis + BullMQ |
 | Auth | Google OAuth 2.0 + JWT (Passport.js) |
 | PDF Parsing | pdf-parse |
-| AI | Groq API (`llama-3.1-8b-instant`) |
+| AI | Gemini API (`gemini-2.5-flash`) |
 | File Upload | Multer |
 | Streaming | Server-Sent Events (SSE) + client polling fallback |
 | Hosting | Vercel + Render + Supabase + Upstash |
@@ -60,7 +60,7 @@ studysnap/
     │   │   └── user.js               # Profile + usage
     │   ├── services/
     │   │   ├── passportStrategy.js   # Google OAuth strategy
-    │   │   ├── GroqService.js
+    │   │   ├── GeminiService.js
     │   │   └── pdfService.js
     │   ├── queues/
     │   │   └── summarizeQueue.js     # BullMQ queue
@@ -83,7 +83,7 @@ studysnap/
 - PostgreSQL database (or Supabase)
 - Redis (or Upstash)
 - Google Cloud OAuth credentials
-- Groq API key
+- Gemini API key
 
 ### 1. Clone & install dependencies
 
@@ -144,13 +144,13 @@ The app will be at http://localhost:5173.
 
 ---
 
-## Groq API
+## Gemini API
 
-1. Go to [Groq Console](https://console.groq.com/)
+1. Go to [Google AI Studio](https://aistudio.google.com/)
 2. Create an API key
-3. Add to `server/.env` as `GROQ_API_KEY`
+3. Add to `server/.env` as `GEMINI_API_KEY`
 
-The app uses `llama-3.1-8b-instant` for fast, low-latency streaming summaries.
+The app uses `gemini-2.5-flash` for fast, low-latency streaming summaries.
 
 ---
 
