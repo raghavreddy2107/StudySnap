@@ -11,7 +11,7 @@ import prisma from '../utils/prisma.js';
 const router = express.Router();
 
 const DAILY_LIMIT = 10;
-const SSE_IDLE_TIMEOUT_MS = 3 * 60 * 1000;
+const SSE_IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 const SSE_HEARTBEAT_MS = 15000;
 
 // POST /api/summarize — upload + enqueue
