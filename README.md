@@ -1,6 +1,6 @@
 # StudySnap 📚⚡
 
-An AI-powered PDF study summarizer for students. Upload any PDF, tell it when your exam is, and get a tailored summary streamed in real time.
+An AI-powered PDF study summarizer for students. Upload any PDF, tell it when your exam is, and get a tailored summary streamed in real time with resilient fallback if live events are missed.
 
 ## Tech Stack
 
@@ -14,7 +14,7 @@ An AI-powered PDF study summarizer for students. Upload any PDF, tell it when yo
 | PDF Parsing | pdf-parse |
 | AI | Groq API (`llama-3.1-8b-instant`) |
 | File Upload | Multer |
-| Streaming | Server-Sent Events (SSE) |
+| Streaming | Server-Sent Events (SSE) + client polling fallback |
 | Hosting | Vercel + Render + Supabase + Upstash |
 
 ---
@@ -30,8 +30,9 @@ studysnap/
 │   │   ├── components/
 │   │   │   └── Layout.jsx            # Nav + page shell
 │   │   ├── hooks/
-│   │   │   ├── useAuth.js            # Auth context + state
-│   │   │   └── useSSEStream.js       # Server-Sent Events hook
+│   │   │   ├── useAuth.jsx           # Auth context + state
+│   │   │   ├── useSSEStream.js       # SSE + polling fallback hook
+│   │   │   └── useTheme.js           # Light/dark mode persistence
 │   │   └── pages/
 │   │       ├── LandingPage.jsx
 │   │       ├── AuthCallback.jsx
@@ -123,7 +124,7 @@ npx prisma db push
 cd server && npm run dev
 
 # Terminal 2 — BullMQ Worker
-cd server && npm run worker
+cd server && node worker.js
 
 # Terminal 3 — Frontend
 cd client && npm run dev
@@ -208,12 +209,22 @@ vercel deploy
 
 ---
 
+## UX Notes
+
+- **Summary generation UI**: The app shows a progressive generation state while processing, then renders summary output when available.
+- **Stream resilience**: If SSE events are delayed/missed, the client polls `/api/summary/:id` every few seconds and auto-resolves to `DONE`/`FAILED`.
+- **Hybrid output behavior**: When SSE is healthy, summary content appears chunk-by-chunk; if events are missed, full summary appears once generation completes.
+- **Theme support**: Light and dark mode are available via the header toggle and persisted in `localStorage`.
+
+---
+
 ## Rate Limits
 
 - **Per user**: 10 summaries/day (resets at midnight)
 - **Auth routes**: 20 requests per 15 minutes per IP
 - **File size**: Max 10MB PDF
 - **Text extraction**: Max 50,000 characters (truncated with notice)
+- **AI prompt input**: Study material sent to model is capped to avoid oversized/token-limit request failures
 
 ---
 
