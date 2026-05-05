@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(232, 87, 42, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(232, 87, 42, 0.03) 0%, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display;
+  }
+}
+
+/* Dark mode palette overrides */
+.dark body {
+  background-color: #0f1115 !important;
+  color: #f1f5f9 !important;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(232, 87, 42, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(232, 87, 42, 0.06) 0%, transparent 50%);
+}
+
+.dark .bg-paper { background-color: #0f1115 !important; }
+.dark .bg-card-bg { background-color: #151922 !important; }
+.dark .bg-cream { background-color: #1c2330 !important; }
+.dark .bg-ink { background-color: #e2e8f0 !important; }
+.dark .text-ink { color: #f1f5f9 !important; }
+.dark .text-paper { color: #0f1115 !important; }
+.dark .text-muted { color: #94a3b8 !important; }
+.dark .border-border { border-color: #2a3346 !important; }
+.dark .prose-studysnap { color: #e2e8f0 !important; }
+.dark .prose-studysnap strong { color: #f97316 !important; }
+.dark .prose-studysnap code,
+.dark .prose-studysnap pre { background-color: #1c2330 !important; }
+.dark .shimmer-bg {
+  background: linear-gradient(90deg, #1c2330 25%, #151922 50%, #1c2330 75%);
+}
+.dark .app-header {
+  background-color: rgba(15, 17, 21, 0.88) !important;
+  border-color: #2a3346 !important;
+}
+
+@layer utilities {
+  .shimmer-bg {
+    background: linear-gradient(90deg, #EDE8DC 25%, #F5F0E8 50%, #EDE8DC 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #DDD8CC transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #DDD8CC;
+    border-radius: 3px;
+  }
+}
+
+/* Markdown rendered content */
+.prose-studysnap {
+  @apply font-body text-ink leading-relaxed;
+}
+
+.prose-studysnap h1 { @apply font-display text-2xl font-bold mt-8 mb-3; }
+.prose-studysnap h2 { @apply font-display text-xl font-bold mt-6 mb-2 text-accent; }
+.prose-studysnap h3 { @apply font-display text-lg font-semibold mt-5 mb-2; }
+.prose-studysnap p { @apply mb-4; }
+.prose-studysnap ul { @apply list-disc pl-5 mb-4 space-y-1; }
+.prose-studysnap ol { @apply list-decimal pl-5 mb-4 space-y-1; }
+.prose-studysnap li { @apply mb-1; }
+.prose-studysnap strong { @apply font-semibold text-accent-dark; }
+.prose-studysnap code { @apply font-mono text-sm bg-cream px-1.5 py-0.5 rounded; }
+.prose-studysnap pre { @apply bg-cream rounded-lg p-4 overflow-x-auto mb-4; }
+.prose-studysnap blockquote { @apply border-l-4 border-accent pl-4 italic text-muted my-4; }
+.prose-studysnap hr { @apply border-border my-6; }

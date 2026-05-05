@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Env files (VERY IMPORTANT)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+
+# Build folders
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Prisma
+server/prisma/migrations/
+
+# Optional
+coverage/

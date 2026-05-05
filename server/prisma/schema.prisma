@@ -1,0 +1,54 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(uuid())
+  googleId          String         @unique
+  email             String         @unique
+  name              String
+  avatarUrl         String?
+  createdAt         DateTime       @default(now())
+  dailyRequestCount Int            @default(0)
+  lastRequestDate   DateTime?
+
+  summaries         Summary[]
+  refreshTokens     RefreshToken[]
+}
+
+model Summary {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName    String
+  examTime    String
+  summaryType String
+  focusTopic  String?
+  summaryText String        @default("")
+  createdAt   DateTime      @default(now())
+  status      SummaryStatus @default(PENDING)
+  errorMsg    String?
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+}
+
+enum SummaryStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
