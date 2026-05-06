@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Only model that works — retry if overloaded
 const MODEL = 'gemini-2.5-flash';
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 3;
 const RETRY_DELAY = 10000; // wait 10 seconds between retries
 
 export const streamSummary = async (prompt, onChunk) => {
