@@ -32,16 +32,17 @@ export const streamSummary = async (prompt, onChunk) => {
       console.log(`[AI] Attempt ${attempt}/${MAX_RETRIES} with ${MODEL}`);
 
       const model = genAI.getGenerativeModel({ model: MODEL });
-      const result = await model.generateContent(request);
-      const finalText = result.response.text();
+      const result = await model.generateContentStream(request);
+      let finalText = '';
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk?.text?.() || '';
+        if (!chunkText) continue;
+        finalText += chunkText;
+        await onChunk(chunkText);
+      }
 
       console.log(`[AI] Success on attempt ${attempt}`);
-
-      // Your original streaming logic
-      const parts = finalText.match(/\S+\s*/g) || [finalText];
-      for (const part of parts) {
-        await onChunk(part);
-      }
 
       return finalText;
 
