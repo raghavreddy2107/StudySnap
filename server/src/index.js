@@ -12,7 +12,7 @@ import summarizeRoutes from './routes/summarize.js';
 import summariesRoutes from './routes/summaries.js';
 import userRoutes from './routes/user.js';
 import './services/passportStrategy.js';
-import keepAlive from './utils/keepAlive.js';
+import keepalive from './utils/keepalive.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -55,6 +55,6 @@ app.listen(PORT, () => {
   console.log(`🚀 StudySnap server running on port ${PORT}`);
 });
 
-keepAlive();
+keepalive();
 
 export default app;
