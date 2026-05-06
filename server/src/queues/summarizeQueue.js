@@ -7,13 +7,11 @@ const connection = getRedisClient();
 export const summarizeQueue = new Queue('summarize', {
   connection,
   defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
+    // Do not auto-retry failed jobs; user can explicitly create a fresh summary.
+    attempts: 1,
     removeOnComplete: { count: 100 },
-    removeOnFail: { count: 50 },
+    // Remove failed jobs immediately so stale/old failed jobs don't linger.
+    removeOnFail: true,
   },
 });
 
