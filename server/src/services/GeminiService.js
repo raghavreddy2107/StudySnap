@@ -12,12 +12,12 @@ export const streamSummary = async (prompt, onChunk) => {
   const userText = typeof prompt === 'object' && prompt ? (prompt.user || '') : String(prompt || '');
   const fullPromptText = [systemText, userText].filter(Boolean).join('\n\n');
 
-  let maxOutputTokens = 8192;
+  let maxOutputTokens =20000;
   if (
     fullPromptText.includes('Keep total output under 300 words') ||
     fullPromptText.includes('ONLY the most critical key terms')
   ) {
-    maxOutputTokens = 1200;
+    maxOutputTokens = 20000;
   }
 
   const request = {
