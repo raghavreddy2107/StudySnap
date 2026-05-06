@@ -5,9 +5,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Fallback chain — tries each model in order if 503/429
 const MODELS = [
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
-  'gemini-2.0-flash',
   'gemini-2.5-flash',
 ];
 
