@@ -11,7 +11,7 @@ import prisma from '../utils/prisma.js';
 const router = express.Router();
 
 const DAILY_LIMIT = 10;
-const SSE_IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+const SSE_IDLE_TIMEOUT_MS = Number(process.env.SSE_IDLE_TIMEOUT_MS || 20 * 60 * 1000);
 const SSE_HEARTBEAT_MS = 15000;
 
 // POST /api/summarize — upload + enqueue
@@ -167,8 +167,8 @@ router.get('/summary/:summaryId/stream', verifyJWTOrQuery, async (req, res) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         if (!closed) {
+          // Gracefully close idle connections and let client polling continue.
           cleanup();
-          res.write(`data: ${JSON.stringify({ error: 'Stream timeout' })}\n\n`);
           res.end();
         }
       }, SSE_IDLE_TIMEOUT_MS);
