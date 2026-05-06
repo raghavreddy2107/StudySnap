@@ -10,7 +10,7 @@ An AI-powered PDF study summarizer for students. Upload any PDF, tell it when yo
 | Backend | Node.js + Express |
 | Database | PostgreSQL via Prisma ORM |
 | Cache/Queue | Redis + BullMQ |
-| Auth | Google OAuth 2.0 + JWT (Passport.js) |
+| Auth | Google OAuth 2.0 + Email/Password + JWT (Passport.js + bcrypt) |
 | PDF Parsing | pdf-parse |
 | AI | Gemini API (`gemini-2.5-flash`) |
 | File Upload | Multer |
@@ -144,6 +144,21 @@ The app will be at http://localhost:5173.
 
 ---
 
+## Authentication Modes
+
+StudySnap now supports two sign-in flows:
+
+- **Google OAuth**: one-click sign in with Google.
+- **Email/Password (manual auth)**: create an account and sign in with credentials.
+
+Behavior details:
+
+- If an email already exists as a Google-only account, manual signup/login returns guidance to continue with Google.
+- If a user signs up manually first, later Google sign-in with the same email links that Google account to the same user.
+- Auth responses include a short-lived access token and set a secure HTTP-only refresh-token cookie.
+
+---
+
 ## Gemini API
 
 1. Go to [Google AI Studio](https://aistudio.google.com/)
@@ -188,6 +203,8 @@ vercel deploy
 ### Auth
 | Method | Path | Description |
 |---|---|---|
+| POST | `/api/auth/signup` | Create account with name, email, and password |
+| POST | `/api/auth/login` | Sign in with email/password |
 | GET | `/api/auth/google` | Initiate Google OAuth |
 | GET | `/api/auth/google/callback` | OAuth callback |
 | POST | `/api/auth/refresh` | Refresh access token |
