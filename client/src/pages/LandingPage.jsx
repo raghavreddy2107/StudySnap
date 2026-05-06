@@ -1,14 +1,33 @@
 // src/pages/LandingPage.jsx
-import { useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTheme } from '../hooks/useTheme.js';
+import api from '../api/axiosInstance.js';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function LandingPage() {
   const [searchParams] = useSearchParams();
   const { isDark, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const { setToken, fetchUser } = useAuth();
+
+  const [mode, setMode] = useState('login'); // 'login' | 'signup'
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const canSubmit = useMemo(() => {
+    const e = email.trim();
+    const p = password;
+    const n = name.trim();
+    if (!e || !p) return false;
+    if (mode === 'signup' && !n) return false;
+    return true;
+  }, [email, password, name, mode]);
 
   useEffect(() => {
     if (searchParams.get('error')) {
@@ -18,6 +37,33 @@ export default function LandingPage() {
 
   const handleGoogleSignIn = () => {
     window.location.href = `${API_URL}/api/auth/google`;
+  };
+
+  const handleLocalAuth = async (e) => {
+    e.preventDefault();
+    if (!canSubmit || busy) return;
+    setBusy(true);
+    try {
+      const payload =
+        mode === 'signup'
+          ? { name: name.trim(), email: email.trim(), password }
+          : { email: email.trim(), password };
+
+      const { data } = await api.post(`/auth/${mode === 'signup' ? 'signup' : 'login'}`, payload);
+      if (data?.accessToken) {
+        setToken(data.accessToken);
+        await fetchUser();
+        navigate('/dashboard');
+        toast.success(mode === 'signup' ? 'Account created' : 'Welcome back');
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Authentication failed';
+      toast.error(msg);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -90,6 +136,80 @@ export default function LandingPage() {
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
             <p className="mt-3 text-xs text-muted">Free • 10 summaries/day • No credit card</p>
+
+            {/* Manual auth */}
+            <div className="mt-8 max-w-md">
+              <div className="inline-flex rounded-xl border border-border bg-card-bg p-1">
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    mode === 'login' ? 'bg-paper text-ink shadow-sm' : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('signup')}
+                  className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    mode === 'signup' ? 'bg-paper text-ink shadow-sm' : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  Create account
+                </button>
+              </div>
+
+              <form onSubmit={handleLocalAuth} className="mt-4 bg-card-bg border border-border rounded-2xl p-5 shadow-sm">
+                {mode === 'signup' && (
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-muted mb-1">Name</label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-paper px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/40"
+                      placeholder="Your name"
+                      autoComplete="name"
+                    />
+                  </div>
+                )}
+
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-muted mb-1">Email</label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-paper px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/40"
+                    placeholder="you@example.com"
+                    type="email"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-muted mb-1">Password</label>
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-paper px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/40"
+                    placeholder="At least 8 characters"
+                    type="password"
+                    autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  />
+                </div>
+
+                <button
+                  disabled={!canSubmit || busy}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-accent text-white px-5 py-3 rounded-xl font-display font-semibold text-sm hover:bg-accent-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  {busy ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
+                </button>
+
+                <p className="mt-3 text-xs text-muted">
+                  You can always use Google sign-in too.
+                </p>
+              </form>
+            </div>
           </div>
         </div>
 
