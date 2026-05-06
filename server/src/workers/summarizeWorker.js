@@ -51,13 +51,14 @@ const worker = new Worker(
     let fullText = '';
 
     try {
-      fullText = await streamSummary(prompt, async (chunk) => {
+      fullText = await streamSummary(prompt, (chunk) => {
         fullText += chunk; // accumulate locally too
         // Publish chunk to Redis pub/sub channel
-        await publisher.publish(
+        // Non-blocking publish so we don't slow down generation with per-word round trips.
+        publisher.publish(
           `summary:${summaryId}`,
           JSON.stringify({ chunk })
-        );
+        ).catch(() => {});
       });
 
       // Save full summary to DB
