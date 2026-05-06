@@ -26,4 +26,5 @@ Thumbs.db
 server/prisma/migrations/
 
 # Optional
-coverage/
+coverage/".env" 
+".env" 
