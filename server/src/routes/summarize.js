@@ -190,6 +190,9 @@ router.get('/summary/:summaryId/stream', verifyJWTOrQuery, async (req, res) => {
       if (closed) return;
       try {
         const data = JSON.parse(message);
+        if (!data || typeof data !== 'object') {
+          return;
+        }
         res.write(`data: ${JSON.stringify(data)}\n\n`);
         resetIdleTimeout();
 

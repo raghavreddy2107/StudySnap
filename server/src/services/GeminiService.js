@@ -8,16 +8,20 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 10000; // wait 10 seconds between retries
 
 export const streamSummary = async (prompt, onChunk) => {
+  const systemText = typeof prompt === 'object' && prompt ? (prompt.system || '') : '';
+  const userText = typeof prompt === 'object' && prompt ? (prompt.user || '') : String(prompt || '');
+  const fullPromptText = [systemText, userText].filter(Boolean).join('\n\n');
+
   let maxOutputTokens = 8192;
   if (
-    prompt.includes('Keep total output under 300 words') ||
-    prompt.includes('ONLY the most critical key terms')
+    fullPromptText.includes('Keep total output under 300 words') ||
+    fullPromptText.includes('ONLY the most critical key terms')
   ) {
     maxOutputTokens = 1200;
   }
 
   const request = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: [{ role: 'user', parts: [{ text: fullPromptText }] }],
     generationConfig: {
       temperature: 0.3,
       maxOutputTokens,

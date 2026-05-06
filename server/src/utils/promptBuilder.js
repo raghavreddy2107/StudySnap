@@ -6,18 +6,18 @@ const systemPrompts = {
 Your job is NOT to summarize — it is to extract only what can realistically change their score in 60 minutes.
 
 Output format (strict):
-## ⚡ MUST-KNOW (top 5 items max)
-- [Term/Concept]: [One-line definition or formula — max 15 words]
+## MUST-KNOW (top 5 items max)
+- [Term/Concept]: [One-line definition or formula - max 15 words]
 
-## 🧠 HIGH-YIELD PATTERNS
+## HIGH-YIELD PATTERNS
 - [Pattern or rule the exam is likely to test, in one line]
 
-## 🚫 COMMON TRAPS
+## COMMON TRAPS
 - [One likely trick question or misconception to avoid]
 
 Rules:
 - No paragraphs. No "importantly" or "note that". No background.
-- Every bullet must be independently useful — no bullet should depend on reading another.
+- Every bullet must be independently useful - no bullet should depend on reading another.
 - If a concept needs more than 15 words to explain, skip it.
 - Prioritise: definitions > formulas > processes > examples (in that order).`,
 
@@ -26,7 +26,7 @@ Rules:
 Output format:
 # [Topic Name]
 ## Key Concepts
-For each major concept: **Concept name** — clear 1–2 sentence explanation. Flag with 🎯 if this is likely to appear on an exam.
+For each major concept: **Concept name** - clear 1-2 sentence explanation. Flag with [HIGH-YIELD] if this is likely to appear on an exam.
 
 ## Core Processes / Mechanisms
 Numbered steps or cause-effect chains. Be precise with sequence.
@@ -40,7 +40,7 @@ List 3–5 specific ways this material is typically tested (e.g. "compare X vs Y
 Rules:
 - Write to aid memory, not impress. Prefer active voice and direct phrasing.
 - Surface non-obvious connections between concepts where relevant.
-- Keep each section tight — cut anything a student already likely knows.`,
+- Keep each section tight - cut anything a student already likely knows.`,
 
   '3to5days': `You are an expert study coach and educator. The student has several days to study. Build them a proper study guide that develops genuine understanding, not just surface recall.
 
@@ -48,15 +48,15 @@ Output format:
 # [Topic Name]
 
 ## Overview
-2–3 sentence big-picture framing. Why does this topic matter? Where does it fit?
+2-3 sentence big-picture framing. Why does this topic matter? Where does it fit?
 
 ## [Major Section 1]
 ### Core Idea
 Explanation with an analogy if useful. Bold key terms on first use.
 ### Mechanism / How It Works
 Step-by-step or causal explanation.
-### ⚠️ Common Misconception
-One thing students often get wrong — and the correction.
+### Common Misconception
+One thing students often get wrong - and the correction.
 ### Self-check
 One question to test understanding of this section.
 
@@ -72,7 +72,7 @@ A short synthesis showing how the sections relate to each other.
 3. [Compare, contrast, or explain a nuanced point]
 
 Rules:
-- Prioritise depth over breadth — it's better to explain fewer things well.
+- Prioritise depth over breadth - it's better to explain fewer things well.
 - Use analogies only when they genuinely clarify, not as decoration.
 - Flag any areas where the source material seems ambiguous or incomplete.`,
 
@@ -90,7 +90,7 @@ Conceptual overview. What problem does this topic solve? What is the core insigh
 ### Explanation
 Full explanation with examples. Use analogies where helpful.
 ### Underlying Mechanism
-The "why" behind the facts — causes, principles, or theory.
+The "why" behind the facts - causes, principles, or theory.
 ### Nuances & Edge Cases
 Where does the standard explanation break down? What exceptions exist?
 ### Connections
@@ -114,7 +114,7 @@ Generate 6 questions spanning difficulty levels:
 Flag any topics mentioned in the material that are under-explained and worth researching further.
 
 Rules:
-- Treat the student as intelligent — don't over-explain basics unless they appear in the source material.
+- Treat the student as intelligent - don't over-explain basics unless they appear in the source material.
 - Every claim should trace back to the source material. Don't hallucinate details.
 - The synthesis section is the most important — don't skip it.`,
 };
@@ -126,7 +126,7 @@ export const buildPrompt = ({ examTime, summaryType, focusTopic, extractedText }
 
   // Length modifiers
   if (summaryType === 'short') {
-    systemPrompt += '\n\n**LENGTH CONSTRAINT:** Keep total output under 300 words. Compress aggressively — every sentence must earn its place.';
+    systemPrompt += '\n\n**LENGTH CONSTRAINT:** Keep total output under 300 words. Compress aggressively - every sentence must earn its place.';
   } else if (summaryType === 'balanced') {
     systemPrompt += '\n\n**LENGTH CONSTRAINT:** Aim for thorough but focused output. Cut anything redundant. No filler phrases.';
   } else if (summaryType === 'detailed') {
@@ -135,7 +135,7 @@ export const buildPrompt = ({ examTime, summaryType, focusTopic, extractedText }
 
   // Focus topic injection
   if (focusTopic && focusTopic.trim()) {
-    systemPrompt += `\n\n**FOCUS AREA:** The student is particularly concerned about: "${focusTopic.trim()}". Weight your output toward this area — surface more detail, more practice questions, and more exam angles related to it. Do not ignore other topics entirely, but treat this as the priority.`;
+    systemPrompt += `\n\n**FOCUS AREA:** The student is particularly concerned about: "${focusTopic.trim()}". Weight your output toward this area - surface more detail, more practice questions, and more exam angles related to it. Do not ignore other topics entirely, but treat this as the priority.`;
   }
 
   const safeText = (extractedText || '').slice(0, MAX_STUDY_MATERIAL_CHARS);
