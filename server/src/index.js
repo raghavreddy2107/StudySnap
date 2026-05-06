@@ -12,6 +12,7 @@ import summarizeRoutes from './routes/summarize.js';
 import summariesRoutes from './routes/summaries.js';
 import userRoutes from './routes/user.js';
 import './services/passportStrategy.js';
+import keepAlive from './utils/keepAlive.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,6 +38,9 @@ app.use('/api/user', userRoutes);
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+// Keep Backend alive
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('[GlobalError]', err);
@@ -50,5 +54,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 StudySnap server running on port ${PORT}`);
 });
+
+keepAlive();
 
 export default app;
