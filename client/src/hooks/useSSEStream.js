@@ -75,9 +75,12 @@ export const useSSEStream = () => {
         if (data.status === 'DONE') {
           stopPolling();
           closeCurrentStream();
-          pendingDoneRef.current = true;
-          enqueueChunk(data.summaryText || '');
-          maybeFinalizeDone();
+          stopFlushLoop();
+          tokenQueueRef.current = [];
+          pendingDoneRef.current = false;
+          setStreamedText(data.summaryText || '');
+          setIsStreaming(false);
+          setIsDone(true);
           setError(null);
           return;
         }
@@ -91,7 +94,36 @@ export const useSSEStream = () => {
         // Keep trying; transient network/server errors should not interrupt generation UX.
       }
     }, FALLBACK_POLL_MS);
-  }, [closeCurrentStream, enqueueChunk, maybeFinalizeDone, stopPolling]);
+  }, [closeCurrentStream, stopFlushLoop, stopPolling]);
+
+  const syncFinalSummaryFromServer = useCallback(async (summaryId) => {
+    try {
+      const { data } = await api.get(`/summary/${summaryId}`);
+      if (data?.status === 'DONE') {
+        const savedText = data.summaryText || '';
+        stopFlushLoop();
+        tokenQueueRef.current = [];
+        pendingDoneRef.current = false;
+        setStreamedText(savedText);
+        setIsStreaming(false);
+        setIsDone(true);
+        setError(null);
+        return;
+      }
+
+      if (data?.status === 'FAILED') {
+        stopFlushLoop();
+        tokenQueueRef.current = [];
+        pendingDoneRef.current = false;
+        setError(data.errorMsg || 'Summary failed. Open dashboard to view details.');
+        setIsStreaming(false);
+      }
+    } catch {
+      // If final sync fails, preserve already streamed content and mark complete.
+      setIsStreaming(false);
+      setIsDone(true);
+    }
+  }, [stopFlushLoop]);
 
   const startStream = useCallback((summaryId) => {
     closeCurrentStream();
@@ -120,9 +152,8 @@ export const useSSEStream = () => {
 
         if (data.done) {
           stopPolling();
-          pendingDoneRef.current = true;
-          maybeFinalizeDone();
           closeCurrentStream();
+          void syncFinalSummaryFromServer(summaryId);
         }
 
         if (data.error) {
@@ -154,7 +185,7 @@ export const useSSEStream = () => {
       startPolling(summaryId);
     };
     startPolling(summaryId);
-  }, [closeCurrentStream, enqueueChunk, maybeFinalizeDone, startPolling, stopFlushLoop, stopPolling]);
+  }, [closeCurrentStream, enqueueChunk, startPolling, stopPolling, syncFinalSummaryFromServer]);
 
   const stopStream = useCallback(() => {
     closeCurrentStream();

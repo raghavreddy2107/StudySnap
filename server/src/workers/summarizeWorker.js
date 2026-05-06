@@ -62,6 +62,7 @@ const worker = new Worker(
       });
 
       // Save full summary to DB
+      console.log(`[Worker] Generated length for ${summaryId}: ${fullText.length} chars`);
       await prisma.summary.update({
         where: { id: summaryId },
         data: { summaryText: fullText, status: 'DONE' },

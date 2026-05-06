@@ -196,6 +196,7 @@ Behavior details:
 3. Add to `server/.env` as `GEMINI_API_KEY`
 
 The app uses `gemini-2.5-flash` for fast, low-latency streaming summaries.
+If your host has stream parsing issues, set `GEMINI_DISABLE_STREAM=true` in `server/.env` to force non-stream generation.
 
 ---
 
