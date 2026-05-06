@@ -33,7 +33,9 @@ export default function NewSummary() {
   const [submitting, setSubmitting] = useState(false);
   const [summaryId, setSummaryId] = useState(null);
   const [uiProgress, setUiProgress] = useState(8);
+  const [streamPhaseIndex, setStreamPhaseIndex] = useState(0);
   const fileInputRef = useRef(null);
+  const summaryContainerRef = useRef(null);
 
   const { streamedText, isStreaming, isDone, error, startStream, reset } = useSSEStream();
 
@@ -138,6 +140,27 @@ export default function NewSummary() {
   }, [streamedText, isStreaming, step]);
 
   const progressPct = step === 2 ? uiProgress : 0;
+  const phaseMessages = [
+    'Connecting to AI stream...',
+    'Reading your PDF context...',
+    'Drafting summary structure...',
+    'Writing key points...',
+    'Finalizing output...',
+  ];
+
+  useEffect(() => {
+    if (step !== 2 || isDone || error || streamedText) return;
+    const t = setInterval(() => {
+      setStreamPhaseIndex((prev) => (prev + 1) % phaseMessages.length);
+    }, 1400);
+    return () => clearInterval(t);
+  }, [step, isDone, error, streamedText, phaseMessages.length]);
+
+  useEffect(() => {
+    if (!summaryContainerRef.current) return;
+    if (step !== 2 || !isStreaming) return;
+    summaryContainerRef.current.scrollTop = summaryContainerRef.current.scrollHeight;
+  }, [streamedText, isStreaming, step]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
@@ -346,7 +369,10 @@ export default function NewSummary() {
           )}
 
           {/* Streaming text */}
-          <div className="bg-card-bg border border-border rounded-2xl p-6 min-h-64 prose-studysnap overflow-auto max-h-[60vh] scrollbar-thin">
+          <div
+            ref={summaryContainerRef}
+            className="bg-card-bg border border-border rounded-2xl p-6 min-h-64 prose-studysnap overflow-auto max-h-[60vh] scrollbar-thin"
+          >
             {streamedText ? (
               <>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamedText}</ReactMarkdown>
@@ -359,9 +385,14 @@ export default function NewSummary() {
                 Summary generated successfully. Open <span className="font-semibold text-ink">View in Library</span> to read it.
               </div>
             ) : !error && (
-              <div className="flex items-center gap-2 text-muted text-sm">
+              <div className="space-y-3">
+                <div className="h-3 w-4/5 rounded bg-cream/70 animate-pulse" />
+                <div className="h-3 w-2/3 rounded bg-cream/70 animate-pulse" />
+                <div className="h-3 w-3/5 rounded bg-cream/70 animate-pulse" />
+                <div className="flex items-center gap-2 text-muted text-sm">
                 <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                Summary is generating... Please wait!
+                {phaseMessages[streamPhaseIndex]}
+                </div>
               </div>
             )}
           </div>
