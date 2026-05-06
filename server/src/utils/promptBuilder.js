@@ -119,7 +119,7 @@ Rules:
 - The synthesis section is the most important — don't skip it.`,
 };
 
-const MAX_STUDY_MATERIAL_CHARS = 12000;
+const MAX_STUDY_MATERIAL_CHARS = 50000;
 
 export const buildPrompt = ({ examTime, summaryType, focusTopic, extractedText }) => {
   let systemPrompt = systemPrompts[examTime] || systemPrompts['tomorrow'];
