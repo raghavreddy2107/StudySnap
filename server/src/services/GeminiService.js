@@ -2,19 +2,22 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+// Fallback chain — tries each model in order if 503/429
+const MODELS = [
+  'gemini-2.0-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+];
 
 export const streamSummary = async (prompt, onChunk) => {
-  // Prioritize completeness over fancy live streaming:
-  // 1. Call Gemini once with a generous token limit.
-  // 2. Take the full text and "stream" it out in chunks via onChunk.
-
   let maxOutputTokens = 8192;
   if (
     prompt.includes('Keep total output under 300 words') ||
     prompt.includes('ONLY the most critical key terms')
   ) {
-    maxOutputTokens = 1200; // plenty for a short summary
+    maxOutputTokens = 1200;
   }
 
   const request = {
@@ -25,15 +28,32 @@ export const streamSummary = async (prompt, onChunk) => {
     },
   };
 
-  const result = await model.generateContent(request);
-  const finalText = result.response.text();
+  let lastError;
 
-  // Stream the already-complete text to the caller so the UI still updates
-  // progressively, but without risking partial SDK streams.
-  const parts = finalText.match(/\S+\s*/g) || [finalText];
-  for (const part of parts) {
-    await onChunk(part);
+  for (const modelName of MODELS) {
+    try {
+      console.log(`[AI] Trying model: ${modelName}`);
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(request);
+      const finalText = result.response.text();
+      console.log(`[AI] Success with: ${modelName}`);
+
+      // Your original streaming logic — unchanged
+      const parts = finalText.match(/\S+\s*/g) || [finalText];
+      for (const part of parts) {
+        await onChunk(part);
+      }
+
+      return finalText;
+
+    } catch (err) {
+      console.log(`[AI] ${modelName} failed: ${err.message}`);
+      lastError = err;
+      if (!err.message.includes('503') && !err.message.includes('429')) {
+        throw err; // non-quota error — don't retry
+      }
+    }
   }
 
-  return finalText;
+  throw lastError; // all models failed
 };
