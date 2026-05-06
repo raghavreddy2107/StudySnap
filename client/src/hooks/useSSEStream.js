@@ -87,6 +87,16 @@ export const useSSEStream = () => {
         }
 
         if (data.error) {
+          const isRecoverableTimeout =
+            typeof data.error === 'string' &&
+            data.error.toLowerCase().includes('stream timeout');
+
+          if (isRecoverableTimeout) {
+            // Fallback polling is already active; keep waiting for DONE/FAILED.
+            closeCurrentStream();
+            return;
+          }
+
           stopPolling();
           setError(data.error);
           setIsStreaming(false);
