@@ -11,10 +11,11 @@ datasource db {
 
 model User {
   id                String         @id @default(uuid())
-  googleId          String         @unique
+  googleId          String?        @unique
   email             String         @unique
   name              String
   avatarUrl         String?
+  passwordHash      String?
   createdAt         DateTime       @default(now())
   dailyRequestCount Int            @default(0)
   lastRequestDate   DateTime?
