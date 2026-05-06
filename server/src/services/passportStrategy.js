@@ -20,9 +20,22 @@ passport.use(
         let user = await prisma.user.findUnique({ where: { googleId } });
 
         if (!user) {
-          user = await prisma.user.create({
-            data: { googleId, email, name, avatarUrl },
-          });
+          // If a user already exists with the same email (e.g. local signup),
+          // link the Google account to that user.
+          const existingByEmail = email
+            ? await prisma.user.findUnique({ where: { email } })
+            : null;
+
+          if (existingByEmail) {
+            user = await prisma.user.update({
+              where: { id: existingByEmail.id },
+              data: { googleId, name, avatarUrl },
+            });
+          } else {
+            user = await prisma.user.create({
+              data: { googleId, email, name, avatarUrl },
+            });
+          }
         } else {
           // Update avatar/name if changed
           user = await prisma.user.update({
