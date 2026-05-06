@@ -56,5 +56,7 @@ app.listen(PORT, () => {
 });
 
 keepalive();
+import './workers/summarizeWorker.js';
+console.log('[Worker] Started inside main server');
 
 export default app;
