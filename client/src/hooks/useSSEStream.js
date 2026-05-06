@@ -172,5 +172,5 @@ export const useSSEStream = () => {
     setError(null);
   }, [stopStream]);
 
-  return { streamedText, isStreaming, isDone, error, startStream, stopStream, reset };
+  return {streamedText, isStreaming, isDone, error, startStream, stopStream, reset};
 };
