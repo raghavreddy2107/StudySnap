@@ -2,5 +2,5 @@
 // This starts the BullMQ worker that processes summarization jobs
 
 import './src/workers/summarizeWorker.js';
-import keepalive from './server/src/utils/keepalive.js';
+import keepalive from './src/utils/keepalive.js';
 keepalive();
