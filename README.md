@@ -6,6 +6,11 @@ An AI-powered PDF study summarizer for students. Upload any PDF, tell it when yo
 
 ---
 
+## Demo Video 
+
+### Video
+![Video](./assets/StudySnap.mp4)
+
 ## Screenshots
 
 ### Landing Page
