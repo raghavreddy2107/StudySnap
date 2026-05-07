@@ -16,6 +16,7 @@ export const useSSEStream = () => {
   const tokenQueueRef = useRef([]);
   const flushTimerRef = useRef(null);
   const pendingDoneRef = useRef(false);
+  const finalTextRef = useRef(null);
 
   const stopFlushLoop = useCallback(() => {
     if (flushTimerRef.current) {
@@ -27,6 +28,10 @@ export const useSSEStream = () => {
   const maybeFinalizeDone = useCallback(() => {
     if (pendingDoneRef.current && tokenQueueRef.current.length === 0) {
       pendingDoneRef.current = false;
+      if (typeof finalTextRef.current === 'string') {
+        setStreamedText(finalTextRef.current);
+      }
+      finalTextRef.current = null;
       setIsStreaming(false);
       setIsDone(true);
     }
@@ -101,12 +106,16 @@ export const useSSEStream = () => {
       const { data } = await api.get(`/summary/${summaryId}`);
       if (data?.status === 'DONE') {
         const savedText = data.summaryText || '';
-        stopFlushLoop();
-        tokenQueueRef.current = [];
-        pendingDoneRef.current = false;
-        setStreamedText(savedText);
-        setIsStreaming(false);
-        setIsDone(true);
+        // Don't overwrite the UI immediately; let the token flush loop render
+        // whatever chunks we already received, then finalize once the queue drains.
+        finalTextRef.current = savedText;
+        if (tokenQueueRef.current.length === 0) {
+          pendingDoneRef.current = false;
+          finalTextRef.current = null;
+          setStreamedText(savedText);
+          setIsStreaming(false);
+          setIsDone(true);
+        }
         setError(null);
         return;
       }
@@ -115,15 +124,16 @@ export const useSSEStream = () => {
         stopFlushLoop();
         tokenQueueRef.current = [];
         pendingDoneRef.current = false;
+        finalTextRef.current = null;
         setError(data.errorMsg || 'Summary failed. Open dashboard to view details.');
         setIsStreaming(false);
       }
     } catch {
-      // If final sync fails, preserve already streamed content and mark complete.
-      setIsStreaming(false);
-      setIsDone(true);
+      // If final sync fails, preserve already streamed content; finalize when queue drains.
+      finalTextRef.current = null;
+      maybeFinalizeDone();
     }
-  }, [stopFlushLoop]);
+  }, [maybeFinalizeDone, stopFlushLoop]);
 
   const startStream = useCallback((summaryId) => {
     closeCurrentStream();
@@ -134,6 +144,7 @@ export const useSSEStream = () => {
     setIsDone(false);
     setError(null);
     pendingDoneRef.current = false;
+    finalTextRef.current = null;
     tokenQueueRef.current = [];
     stopFlushLoop();
 
@@ -153,7 +164,9 @@ export const useSSEStream = () => {
         if (data.done) {
           stopPolling();
           closeCurrentStream();
+          pendingDoneRef.current = true;
           void syncFinalSummaryFromServer(summaryId);
+          maybeFinalizeDone();
         }
 
         if (data.error) {
@@ -169,6 +182,10 @@ export const useSSEStream = () => {
 
           stopPolling();
           setError(data.error);
+          stopFlushLoop();
+          tokenQueueRef.current = [];
+          pendingDoneRef.current = false;
+          finalTextRef.current = null;
           setIsStreaming(false);
           closeCurrentStream();
         }
@@ -193,6 +210,7 @@ export const useSSEStream = () => {
     stopFlushLoop();
     tokenQueueRef.current = [];
     pendingDoneRef.current = false;
+    finalTextRef.current = null;
     setIsStreaming(false);
   }, [closeCurrentStream, stopFlushLoop, stopPolling]);
 
