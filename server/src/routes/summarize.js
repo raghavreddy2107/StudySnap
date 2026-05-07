@@ -158,6 +158,7 @@ router.get('/summary/:summaryId/stream', verifyJWTOrQuery, async (req, res) => {
     const subscriber = createIsolatedRedisClient();
     await subscriber.connect();
     const channel = `summary:${summaryId}`;
+    let onMessage = null;
 
     let closed = false;
     let timeout;
@@ -180,14 +181,17 @@ router.get('/summary/:summaryId/stream', verifyJWTOrQuery, async (req, res) => {
         clearTimeout(timeout);
         clearInterval(heartbeat);
         subscriber.unsubscribe(channel).catch(() => {});
+        if (onMessage) subscriber.off('message', onMessage);
         subscriber.quit().catch(() => {});
       }
     };
 
     req.on('close', cleanup);
 
-    await subscriber.subscribe(channel, (message) => {
+    // ioredis delivers pub/sub messages via the `message` event.
+    onMessage = (receivedChannel, message) => {
       if (closed) return;
+      if (receivedChannel !== channel) return;
       try {
         const data = JSON.parse(message);
         if (!data || typeof data !== 'object') {
@@ -203,7 +207,10 @@ router.get('/summary/:summaryId/stream', verifyJWTOrQuery, async (req, res) => {
       } catch (e) {
         console.error('[SSE parse error]', e);
       }
-    });
+    };
+
+    subscriber.on('message', onMessage);
+    await subscriber.subscribe(channel);
 
     // Race-condition guard:
     // if the worker marked DONE/FAILED between the initial status check and the
