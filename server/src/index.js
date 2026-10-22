@@ -56,6 +56,8 @@ app.listen(PORT, () => {
 });
 
 keepalive();
+
+// Decouple this worker from the main server process to avoid blocking the event loop and to allow for better scalability. The worker can handle CPU-intensive tasks like summarization without affecting the responsiveness of the main server.
 import './workers/summarizeWorker.js';
 console.log('[Worker] Started inside main server');
 
