@@ -8,6 +8,7 @@ export const summarizeQueue = new Queue('summarize', {
   connection,
   defaultJobOptions: {
     // Do not auto-retry failed jobs; user can explicitly create a fresh summary.
+    // increase attempts to 3 if you want to allow retries for transient errors like network issues or rate limits.
     attempts: 1,
     removeOnComplete: { count: 100 },
     // Remove failed jobs immediately so stale/old failed jobs don't linger.
